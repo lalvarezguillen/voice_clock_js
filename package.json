@@ -1,0 +1,14 @@
+{
+  "name": "voice_clock_js",
+  "version": "1.0.0",
+  "description": "Clock that uses text-to-speech to read the current time to the user",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luis Alvarez",
+  "license": "ISC",
+  "dependencies": {
+    
+  }
+}
