@@ -8,7 +8,7 @@ const app = express()
 const translator = new num2word('EN_US')
 
 app.get('/', function (req, res) {
-    res.send('Simple aplication to test now.sh')
+    res.send('<p>Simple aplication to test now.sh</p><p>Make a request to /now to get current time</p>')
 })
 
 app.get('/now', function (req, res) {
