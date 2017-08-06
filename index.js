@@ -1,4 +1,4 @@
-const https = require('https')
+const rpn = require('request-promise-native')
 const express = require('express')
 const num2word = require('numbers2words')
 const googleTTS = require('google-tts-api')
@@ -13,23 +13,33 @@ app.get('/', function (req, res) {
 app.get('/now', function (req, res) {
     const now = new Date()
     const datetime_str = getTimeAsText(now)
+    const req_opts = {
+        resolveWithFullResponse: true
+    }
     console.log(datetime_str)
-    googleTTS(datetime_str, 'en', 1).then(function(url){
-        console.log(url)
-        https.get(url, function(response){
-            if(response.statusCode == 200){
-                res.writeHead(200, {
-                    'content-type': response.headers['content-type'],
-                    'content-disposition': 'inline',
-                    'Cache-Control': 'private, no-cache, no-store, must-revalidate',
-                    'Expires': '-1',
-                    'Pragma': 'no-cache',
-                })
-                response.pipe(res)
-            }
-        })
-    })
+    googleTTS(datetime_str, 'en', 1)
+        .then(url => rpn.get(url, req_opts))
+        .then(audio_res => handleGoogleAudio(audio_res, req, res))
 })
+
+function handleGoogleAudio (audio_res, user_req, user_res) {
+    console.log(audio_res.body.length)
+    console.log(user_res)
+    /* user_res.writeHead(200, {
+        'content-type': audio_res.headers['content-type'],
+        'content-disposition': 'inline',
+        'content-length': audio_res.headers['content-length'],
+        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+        'Expires': '-1',
+        'Pragma': 'no-cache',
+    }) */
+    console.log('about to return response')
+    // audio_res.pipe(user_res)
+    user_res.send(audio_res.body)
+    user_res.end() 
+    console.log('response returned')
+    return
+}
 
 app.listen(3000, function() {
     console.log('Listening on port 3000')
