@@ -1,5 +1,7 @@
+const https = require('https')
 const express = require('express')
 const num2word = require('numbers2words')
+const googleTTS = require('google-tts-api')
 
 const app = express()
 const translator = new num2word('EN_US')
@@ -10,7 +12,14 @@ app.get('/', function (req, res) {
 
 app.get('/now', function (req, res) {
     const now = new Date()
-    res.send(getTimeAsText(now))
+    const datetime_str = getTimeAsText(now)
+    googleTTS(datetime_str, 'en', 1).then(function(url){
+        console.log(url)
+        https.get(url, function(response){
+            res.writeHead(200, response.headers)
+            response.pipe(res)
+        })
+    })
 })
 
 app.listen(3000, function() {
