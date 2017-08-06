@@ -1,4 +1,5 @@
 const https = require('https')
+const Request = require('request')
 const express = require('express')
 const num2word = require('numbers2words')
 const googleTTS = require('google-tts-api')
@@ -13,14 +14,25 @@ app.get('/', function (req, res) {
 app.get('/now', function (req, res) {
     const now = new Date()
     const datetime_str = getTimeAsText(now)
-    googleTTS(datetime_str, 'en', 1).then(function(url){
-        console.log(url)
-        https.get(url, function(response){
-            res.writeHead(200, response.headers)
-            response.pipe(res)
-        })
-    })
+
+    console.log(datetime_str)
+    googleTTS(datetime_str, 'en', 1)
+        .then(url => handleGoogleAudio(url, req, res))
 })
+
+function handleGoogleAudio (url, user_req, user_resp) {
+    console.log(url)
+     https.get(url, audio_resp => {
+        user_resp.writeHead(200, {
+            'cache-control': 'private, no-cache, no-store, must-revalidate',
+            'expires': "-1",
+            'pragma': "no-cache",
+            "content-type": audio_resp.headers['content-type'],
+            'content-disposition': 'inline'
+        })
+        audio_resp.pipe(user_resp) 
+    }) 
+}
 
 app.listen(3000, function() {
     console.log('Listening on port 3000')
