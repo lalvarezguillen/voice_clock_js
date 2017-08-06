@@ -13,11 +13,20 @@ app.get('/', function (req, res) {
 app.get('/now', function (req, res) {
     const now = new Date()
     const datetime_str = getTimeAsText(now)
+    console.log(datetime_str)
     googleTTS(datetime_str, 'en', 1).then(function(url){
         console.log(url)
         https.get(url, function(response){
-            res.writeHead(200, response.headers)
-            response.pipe(res)
+            if(response.statusCode == 200){
+                res.writeHead(200, {
+                    'content-type': response.headers['content-type'],
+                    'content-disposition': 'inline',
+                    'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+                    'Expires': '-1',
+                    'Pragma': 'no-cache',
+                })
+                response.pipe(res)
+            }
         })
     })
 })
