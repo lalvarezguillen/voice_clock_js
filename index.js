@@ -21,22 +21,16 @@ app.get('/now', function (req, res) {
 })
 
 function handleGoogleAudio (url, user_req, user_resp) {
-    // var url = 'https://cdn.findwatt.com/resources/images/fw-logo-post-preview.png'
     console.log(url)
      https.get(url, audio_resp => {
-        user_resp.writeHead({
+        user_resp.writeHead(200, {
             'cache-control': 'private, no-cache, no-store, must-revalidate',
             'expires': "-1",
             'pragma': "no-cache",
             "content-type": audio_resp.headers['content-type'],
             'content-disposition': 'inline'
         })
-        console.log(audio_resp.headers)
-        console.log(audio_resp.body.length)
         audio_resp.pipe(user_resp) 
-        // user_resp.send(audio_resp.body)
-        // user_resp.end()
-        // return
     }) 
 }
 
