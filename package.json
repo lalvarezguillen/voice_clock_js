@@ -4,11 +4,14 @@
   "description": "Clock that uses text-to-speech to read the current time to the user",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "author": "Luis Alvarez",
   "license": "ISC",
   "dependencies": {
-    
+    "express": "^4.15.3",
+    "google-tts-api": "0.0.1",
+    "numbers2words": "^1.4.0"
   }
 }
