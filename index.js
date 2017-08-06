@@ -1,4 +1,5 @@
-const rpn = require('request-promise-native')
+const https = require('https')
+const Request = require('request')
 const express = require('express')
 const num2word = require('numbers2words')
 const googleTTS = require('google-tts-api')
@@ -13,32 +14,30 @@ app.get('/', function (req, res) {
 app.get('/now', function (req, res) {
     const now = new Date()
     const datetime_str = getTimeAsText(now)
-    const req_opts = {
-        resolveWithFullResponse: true
-    }
+
     console.log(datetime_str)
     googleTTS(datetime_str, 'en', 1)
-        .then(url => rpn.get(url, req_opts))
-        .then(audio_res => handleGoogleAudio(audio_res, req, res))
+        .then(url => handleGoogleAudio(url, req, res))
 })
 
-function handleGoogleAudio (audio_res, user_req, user_res) {
-    console.log(audio_res.body.length)
-    console.log(user_res)
-    /* user_res.writeHead(200, {
-        'content-type': audio_res.headers['content-type'],
-        'content-disposition': 'inline',
-        'content-length': audio_res.headers['content-length'],
-        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
-        'Expires': '-1',
-        'Pragma': 'no-cache',
-    }) */
-    console.log('about to return response')
-    // audio_res.pipe(user_res)
-    user_res.send(audio_res.body)
-    user_res.end() 
-    console.log('response returned')
-    return
+function handleGoogleAudio (url, user_req, user_resp) {
+    // var url = 'https://cdn.findwatt.com/resources/images/fw-logo-post-preview.png'
+    console.log(url)
+     https.get(url, audio_resp => {
+        user_resp.writeHead({
+            'cache-control': 'private, no-cache, no-store, must-revalidate',
+            'expires': "-1",
+            'pragma': "no-cache",
+            "content-type": audio_resp.headers['content-type'],
+            'content-disposition': 'inline'
+        })
+        console.log(audio_resp.headers)
+        console.log(audio_resp.body.length)
+        audio_resp.pipe(user_resp) 
+        // user_resp.send(audio_resp.body)
+        // user_resp.end()
+        // return
+    }) 
 }
 
 app.listen(3000, function() {
