@@ -13,7 +13,7 @@ app.get('/', function (req, res) {
     res.send('<p>Simple aplication to test now.sh</p>'
              + '<p>Make a request to <a href="/now">/now</a>'
              + ' to attempt to get current time in your timezone</p>'
-             + '<p>If that fails, it will display UTC time</p>')
+             + '<p>If that fails, it will report UTC time</p>')
 })
 
 app.get('/now', function (req, res) {
