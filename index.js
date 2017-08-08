@@ -1,5 +1,5 @@
-const http = require('http')
 const https = require('https')
+const ip = require('ip')
 const moment = require('moment-timezone')
 const Request = require('request')
 const express = require('express')
@@ -33,13 +33,35 @@ app.get('/', function (req, res) {
 app.get('/now', function (req, res) {
     /* Eventually look into validating if req.ip is a valid public IP
     before using x-forwarded-for */
-    console.log(`ip: ${req.ip}`)
-    console.log(`x-forwarded-for: ${req.headers['x-forwarded-for']}`)
-    getLocalizedTimeString(req['headers']['x-forwarded-for'])
+    const source_ip = getSourceIp(req)
+    getLocalizedTimeString(source_ip)
         .then(datetime_str => googleTTS(datetime_str, 'en', 1))
         .catch(err => res.send(err))
         .then(url => handleGoogleAudio(url, req, res))
 })
+
+
+/**
+ * Given a request obj tries to get the source IP
+ * It looks at req.ip and then at the x-forwarded-for header
+ * until it gets a proper, non-private IP
+ * @param {express.Request} req An object representing the HTTP
+ * request received
+ * @return {string} The alleged source IP
+ */
+function getSourceIp(req){
+    console.log(`ip: ${req.ip}`)
+    console.log(`x-forwarded-for: ${req.headers['x-forwarded-for']}`)
+    if(req.ip && !ip.isPrivate(req.ip)){
+        return req.ip
+    }
+    const xforw = req.headers['x-forwarded-for']
+    if(xforw && !isPrivate(xforw)){
+        return xforw
+    }
+    /* Extend with more exotic headers */
+    /* Come up with a reasonable fallback */
+}
 
 
 /**
