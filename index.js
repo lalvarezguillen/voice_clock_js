@@ -9,6 +9,13 @@ const googleTTS = require('google-tts-api')
 const app = express()
 const translator = new num2word('EN_US')
 
+
+/**
+ * Handles GET requests to the root endpoint.
+ * Serves some info about this API
+ * @function
+ * @name get/
+ */
 app.get('/', function (req, res) {
     res.send('<p>Simple aplication to test now.sh</p>'
              + '<p>Make a request to <a href="/now">/now</a>'
@@ -16,33 +23,72 @@ app.get('/', function (req, res) {
              + '<p>If that fails, it will report UTC time</p>')
 })
 
+
+/**
+ * Handles GET requests to /now.
+ * Reads to the user the current time in his/her timezone.
+ * @function
+ * @name get/now
+ */
 app.get('/now', function (req, res) {
-    console.log(req.headers['x-forwarded-for'])
-    getLocalizedDatetime(req['headers']['x-forwarded-for'])
+    /* Eventually look into validating if req.ip is a valid public IP
+    before using x-forwarded-for */
+    console.log(`ip: ${req.ip}`)
+    console.log(`x-forwarded-for: ${req.headers['x-forwarded-for']}`)
+    getLocalizedTimeString(req['headers']['x-forwarded-for'])
         .then(datetime_str => googleTTS(datetime_str, 'en', 1))
-        .catch(datetime_str => googleTTS(datetime_str, 'en', 1))
-            .then(url => handleGoogleAudio(url, req, res))
+        .catch(err => res.send(err))
+        .then(url => handleGoogleAudio(url, req, res))
 })
 
-function getLocalizedDatetime(ip){
+
+/**
+ * Given an IP tries to geolocalize it and produce a time string
+ * for the corresponding timezone. Failing that produces a time string
+ * for Greenwich.
+ * @param {string} ip The IP to geolocalize
+ * @return {Promise<string>}
+ */
+function getLocalizedTimeString(ip){
     return new Promise((resolve, reject) =>{
-        Request.get("http://ip-api.com/json/"+ip, (err, resp, body) =>{
+        Request.get(`http://ip-api.com/json/${ip}`, (err, resp, body) =>{
             json_body = JSON.parse(body)
-            if(resp.statusCode == 200 && json_body.timezone){
-                const now = moment(new Date()).tz('UTC')
-                console.log(json_body.timezone)
-                const localized_dt = now.clone().tz(json_body.timezone)
-                console.log(localized_dt)
-                resolve(getTimeAsText(localized_dt, json_body.timezone))
+            if(resp.statusCode == 200){
+                if(json_body.timezone){
+                    console.log(`timezone: ${json_body.timezone}`)
+                    const now = moment(new Date()).tz('UTC')
+                    const localized_dt = now.clone().tz(json_body.timezone)
+                    let location
+                    if(json_body.city){
+                        location = json_body.city
+                    }
+                    else if(json_body.country){
+                        location = json_body.country
+                    }
+                    else {
+                        location = json_body.timezone.split('/')[1]
+                    }
+                    resolve(getTimeAsText(localized_dt, location))
+                }
+                else{
+                    const now = moment(new Date()).tz('UTC')
+                    resolve(getTimeAsText(now, 'Greenwich'))
+                }
             }
-            else {
-                const now = moment(new Date()).tz('UTC')
-                reject(getTimeAsText(now, null))
+            else{
+                reject('We encountered an error while processing your request')
             }
         })
     })
 }
 
+
+/**
+ * Requests Google's Text2Speech API to produce the audio of a datetime string.
+ * @param {string} url The URL of Google's TTS to call
+ * @param {express.Request} user_req The expressjs request object
+ * @param {express.Response} user_resp The expressjs response object
+ */
 function handleGoogleAudio (url, user_req, user_resp) {
     console.log(url)
      https.get(url, audio_resp => {
@@ -62,22 +108,14 @@ app.listen(3000, function() {
 })
 
 
-function getTimeAsText (datetime_obj, timezone) {
-    /*
-    @description: Produces a readable time string from a datetime object.
-
-    @arg datetime_obj: {Date} The date object to turn into human-readable
+/**
+    Produces a readable time string from a datetime object.
+    @param {Date} datetime_obj The date object to turn into human-readable
     string
-
-    @return: {str} A human-readable time string
-    */
-    if (timezone){
-        var tz_str = 'in ' + timezone.split('/')[1]
-    }
-    else {
-        var tz_str = 'in Greenwhich'
-    }
-    
+    @param {string} location A string describing the user's location.
+    @return {string} A human-readable time string
+*/
+function getTimeAsText (datetime_obj, location) {
     let hours_str, am_pm, minutes_str
     if(datetime_obj.hours() < 12){
         hours_str = translator.toWords(datetime_obj.hours())
@@ -99,5 +137,5 @@ function getTimeAsText (datetime_obj, timezone) {
         minutes_str = translator.toWords(datetime_obj.minutes())
     }
 
-    return ['It is', hours_str, minutes_str, am_pm, tz_str].join(', ')
+    return ['It is', hours_str, minutes_str, am_pm, 'in ' + location].join(', ')
 }
