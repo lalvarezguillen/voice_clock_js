@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "build:doc": "jsdoc index.js"
   },
   "author": "Luis Alvarez",
   "license": "ISC",
@@ -17,5 +18,8 @@
     "numbers2words": "^1.4.0",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^4.4.1"
   }
 }

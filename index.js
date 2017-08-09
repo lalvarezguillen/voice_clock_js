@@ -31,8 +31,6 @@ app.get('/', function (req, res) {
  * @name get/now
  */
 app.get('/now', function (req, res) {
-    /* Eventually look into validating if req.ip is a valid public IP
-    before using x-forwarded-for */
     const source_ip = getSourceIp(req)
     getLocalizedTimeString(source_ip)
         .then(datetime_str => googleTTS(datetime_str, 'en', 1))
@@ -65,6 +63,71 @@ function getSourceIp(req){
 
 
 /**
+ * Given an IP, tries to geolocalize it, potentially obtaining timezone,
+ * country and city
+ * @param {string} ip The IP to geolocalize
+ * @return {Promise<object>}
+ */
+function geolocIP (ip) {
+    // we could validate the IP here
+    return new Promise((resolve, reject) => {
+        Request.get(`http://ip-api.com/json/${ip}`, (err, resp, body) => {
+            if (resp.statusCode == 200) {
+                const json_body = JSON.parse(body)
+                resolve(json_body)
+            }
+            else {
+                reject('There was an error while geolocalizing the IP')
+            }
+        })
+    })
+}
+
+
+/**
+ * Produces a datetime object of the current time, localized according
+ * to some geoloc info
+ * @param {object} geoloc_info Contains geoloc info, hopefully time zone,
+ * country and city
+ * @return {moment.Moment}
+ */
+function localizeCurrTime (geoloc_info) {
+    const now = moment(new Date()).tz('UTC')
+    if(geoloc_info.timezone){
+        console.log(`timezone: ${geoloc_info.timezone}`)
+        const localized_dt = now.clone().tz(geoloc_info.timezone)
+        return localized_dt
+    }
+        return now
+}
+
+
+/**
+ * Given an object containing geoloc info (tz, country, city hopefully)
+ * obtains the name of the inermost geolocation entity available that
+ * would be relevant to localize time.
+ * If nothing is found, it defaults to 'Greenwhich'
+ * @param {object} geoloc_info Contains geoloc info, hopefully time zone,
+ * country and city
+ * @return {str} The name of the innermost geographical entity encountered
+ */
+function mostDetailedLocTime(geoloc_info){
+    if(geoloc_info.city){
+        return geoloc_info.city
+    }
+    
+    if(geoloc_info.country){
+        return geoloc_info.country
+    }
+
+    if (geoloc_info.timezone) {
+        return geoloc_info.timezone.split('/')[1]
+    }
+
+    return 'Greenwhich'
+}
+
+/**
  * Given an IP tries to geolocalize it and produce a time string
  * for the corresponding timezone. Failing that produces a time string
  * for Greenwich.
@@ -72,35 +135,15 @@ function getSourceIp(req){
  * @return {Promise<string>}
  */
 function getLocalizedTimeString(ip){
-    return new Promise((resolve, reject) =>{
-        Request.get(`http://ip-api.com/json/${ip}`, (err, resp, body) =>{
-            json_body = JSON.parse(body)
-            if(resp.statusCode == 200){
-                if(json_body.timezone){
-                    console.log(`timezone: ${json_body.timezone}`)
-                    const now = moment(new Date()).tz('UTC')
-                    const localized_dt = now.clone().tz(json_body.timezone)
-                    let location
-                    if(json_body.city){
-                        location = json_body.city
-                    }
-                    else if(json_body.country){
-                        location = json_body.country
-                    }
-                    else {
-                        location = json_body.timezone.split('/')[1]
-                    }
-                    resolve(getTimeAsText(localized_dt, location))
-                }
-                else{
-                    const now = moment(new Date()).tz('UTC')
-                    resolve(getTimeAsText(now, 'Greenwich'))
-                }
-            }
-            else{
-                reject('We encountered an error while processing your request')
-            }
-        })
+    return new Promise((resolve, reject) => {
+        geolocIP(ip)
+            .then(geodata => {
+                const localized_dt = localizeCurrTime(geodata)
+                const location = mostDetailedLocTime(geodata)
+                const time_str = getTimeAsText(localized_dt, location)
+                resolve(time_str)
+            })
+            .catch(err => reject(err))
     })
 }
 
