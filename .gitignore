@@ -2,3 +2,5 @@ node_modules
 .vscode
 *.png
 out
+.eslintrc.yml
+*.log

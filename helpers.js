@@ -89,7 +89,7 @@ function mostDetailedLocTime(geoloc_info){
         return geoloc_info.timezone.split('/')[1]
     }
 
-    return 'Greenwhich'
+    return 'Greenwich'
 }
 
 /**
@@ -137,7 +137,7 @@ function handleGoogleAudio (url, user_req, user_resp) {
 const translator = new num2word('EN_US')
 /**
     Produces a readable time string from a datetime object.
-    @param {Date} datetime_obj The date object to turn into human-readable
+    @param {moment.Moment} datetime_obj The date object to turn into human-readable
     string
     @param {string} location A string describing the user's location.
     @return {string} A human-readable time string
