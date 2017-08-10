@@ -4,7 +4,7 @@
   "description": "Clock that uses text-to-speech to read the current time to the user",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ava",
     "start": "node index.js",
     "build:doc": "jsdoc index.js"
   },
@@ -20,6 +20,7 @@
     "request-promise-native": "^1.0.4"
   },
   "devDependencies": {
+    "ava": "^0.21.0",
     "eslint": "^4.4.1"
   }
 }
