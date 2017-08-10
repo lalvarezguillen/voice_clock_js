@@ -4,7 +4,7 @@
   "description": "Clock that uses text-to-speech to read the current time to the user",
   "main": "index.js",
   "scripts": {
-    "test": "ava",
+    "test": "nyc ava",
     "start": "node index.js",
     "build:doc": "jsdoc index.js"
   },
@@ -21,7 +21,9 @@
   },
   "devDependencies": {
     "ava": "^0.21.0",
+    "codecov": "^2.3.0",
     "eslint": "^4.4.1",
-    "eslint-config-google": "^0.9.1"
+    "eslint-config-google": "^0.9.1",
+    "nyc": "^11.1.0"
   }
 }

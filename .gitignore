@@ -4,3 +4,5 @@ node_modules
 out
 .eslintrc.yml
 *.log
+coverage
+.nyc_output
