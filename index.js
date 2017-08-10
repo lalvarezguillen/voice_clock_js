@@ -8,8 +8,6 @@ const googleTTS = require('google-tts-api')
 const helpers = require('./helpers')
 
 const app = express()
-const translator = new num2word('EN_US')
-
 console.log(helpers)
 
 

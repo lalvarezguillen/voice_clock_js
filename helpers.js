@@ -133,6 +133,8 @@ function handleGoogleAudio (url, user_req, user_resp) {
     }) 
 }
 
+
+const translator = new num2word('EN_US')
 /**
     Produces a readable time string from a datetime object.
     @param {Date} datetime_obj The date object to turn into human-readable
