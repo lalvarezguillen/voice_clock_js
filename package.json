@@ -4,7 +4,7 @@
   "description": "Clock that uses text-to-speech to read the current time to the user",
   "main": "index.js",
   "scripts": {
-    "test": "nyc ava && codecov",
+    "test": "nyc report --reporter=lcov ava && codecov",
     "test:dev": "nyc ava",
     "start": "node index.js",
     "build:doc": "jsdoc index.js"
