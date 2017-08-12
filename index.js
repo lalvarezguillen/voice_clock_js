@@ -8,7 +8,6 @@ const googleTTS = require('google-tts-api')
 const helpers = require('./helpers')
 
 const app = express()
-console.log(helpers)
 
 
 /**
