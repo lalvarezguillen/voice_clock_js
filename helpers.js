@@ -4,6 +4,9 @@ const moment = require('moment-timezone')
 const Request = require('request')
 const num2word = require('numbers2words')
 
+const translator = new num2word('EN_US')
+const api_key = 'c8c07d9b9e8b4b569f4212704171108'
+
 /**
  * Given a request obj tries to get the source IP
  * It looks at req.ip and then at the x-forwarded-for header
@@ -112,6 +115,68 @@ function getLocalizedTimeString(ip){
     })
 }
 
+/**
+ * Obtains a text description of the weather from the estimated
+ * location of IP
+ * @param {string} ip The IP where the request originated from
+ * @return {promise<string>} A textual description of the local
+ * weather
+ */
+function getLocalWeatherDescription (ip) {
+    return new Promise((resolve, reject) => {
+        geolocIP(ip)
+            .then(geodata => getMetereologicalData(geodata))
+            .catch(err => err)
+            .then(meteodata => {
+                const weather_description = getWeatherAsText(meteodata)
+                resolve(weather_description)
+            })
+            
+    })
+}
+
+/**
+ * Obtains the meteorological data for for a particular location
+ * @param {obj} geodata Contains geolocation data, ideally a city name
+ * under geodata.city
+ * @return {obj} Contains meteorological data.
+ */
+function getMetereologicalData (geodata) {
+    return new Promise((resolve, reject) => {
+        if(!geodata.city) {
+            geodata.city = 'Caracas'
+        }
+        const url = `http://api.apixu.com/v1/current.json?key=${api_key}&q=${geodata.city}`
+        console.log(url)
+        Request.get(url, (err, resp, body) => {
+            if (resp && resp.statusCode == 200) {
+                const body_obj = JSON.parse(body)
+                resolve(body_obj)
+            }
+            else {
+                reject('Unable to gather meteorological data')
+            }
+        })
+    })
+}
+
+/**
+ * Creates a description of the current weather from an object that contains
+ * meteorological data
+ */
+function getWeatherAsText(meteodata) {
+    const there_is_location = meteodata.location && meteodata.location.name
+    const there_is_condition = meteodata.current && meteodata.current.condition
+    if(there_is_location && there_is_condition) {
+        const loc_str = `Currently, the weather in ${meteodata.location.name} is `
+        const cond_str = `${meteodata.current.condition.text}. `
+        const temp_str = 'And the thermal sensation is ' +
+                         `${translator.toWords(parseInt(meteodata.current.feelslike_c))} ` +
+                         'degrees Celsius'
+        return loc_str + cond_str + temp_str
+    }
+    return 'We weren\'t able to pinpoint your location'
+}
 
 /**
  * Requests Google's Text2Speech API to produce the audio of a datetime string.
@@ -134,7 +199,6 @@ function handleGoogleAudio (url, user_req, user_resp) {
 }
 
 
-const translator = new num2word('EN_US')
 /**
     Produces a readable time string from a datetime object.
     @param {moment.Moment} datetime_obj The date object to turn into human-readable
@@ -174,3 +238,4 @@ module.exports.mostDetailedLocTime = mostDetailedLocTime
 module.exports.getLocalizedTimeString = getLocalizedTimeString
 module.exports.handleGoogleAudio = handleGoogleAudio
 module.exports.getTimeAsText = getTimeAsText
+module.exports.getLocalWeatherDescription = getLocalWeatherDescription

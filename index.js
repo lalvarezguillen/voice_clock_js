@@ -39,6 +39,14 @@ app.get('/now', function (req, res) {
         .then(url => helpers.handleGoogleAudio(url, req, res))
 })
 
+app.get('/weather', function (req, res) {
+    const source_ip = helpers.getSourceIP(req)
+    helpers.getLocalWeatherDescription(source_ip)
+        .then(weather_desc => googleTTS(weather_desc, 'en', 1))
+        .catch(err => res.send(err))
+        .then(url => helpers.handleGoogleAudio(url, req, res))
+})
+
 
 app.listen(3000, function() {
     console.log('Listening on port 3000')
