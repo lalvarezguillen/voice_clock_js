@@ -18,10 +18,24 @@ console.log(helpers)
  * @name get/
  */
 app.get('/', function (req, res) {
-    res.send('<p>Simple aplication to test now.sh</p>'
-             + '<p>Make a request to <a href="/now">/now</a>'
-             + ' to attempt to get current time in your timezone</p>'
-             + '<p>If that fails, it will report UTC time</p>')
+    const root_info = {
+        version: 0.1,
+        desc: 'Simple API to test out now.sh',
+        links: [
+            {
+                url: '/now',
+                method: 'GET',
+                desc: 'Attempts to report the current time in the user\'s location. ' +
+                      'Failing that it reports current UTC time'
+            },
+            {
+                url: '/weather',
+                method: 'GET',
+                desc: 'Gives the user a current brief on the weather at his/her location'
+            }
+        ]
+    }
+    res.send(root_info)
 })
 
 
