@@ -122,10 +122,9 @@ function getLocalizedTimeString(ip){
  * @return {promise<string>} A textual description of the local
  * weather
  */
-function getLocalWeatherDescription (ip) {
+function getLocalWeatherDescription (city) {
     return new Promise((resolve, reject) => {
-        geolocIP(ip)
-            .then(geodata => getMetereologicalData(geodata))
+        getMetereologicalData(city)
             .catch(err => err)
             .then(meteodata => {
                 const weather_description = getWeatherAsText(meteodata)
@@ -141,12 +140,11 @@ function getLocalWeatherDescription (ip) {
  * under geodata.city
  * @return {obj} Contains meteorological data.
  */
-function getMetereologicalData (geodata) {
+function getMetereologicalData (city) {
     return new Promise((resolve, reject) => {
-        if(!geodata.city) {
-            geodata.city = 'Caracas'
-        }
-        const url = `http://api.apixu.com/v1/current.json?key=${api_key}&q=${geodata.city}`
+        // This is here for developing purpose. If the city is not provided
+        // this function should return null or smething like that
+        const url = `http://api.apixu.com/v1/current.json?key=${api_key}&q=${city}`
         console.log(url)
         Request.get(url, (err, resp, body) => {
             if (resp && resp.statusCode == 200) {
