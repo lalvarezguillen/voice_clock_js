@@ -237,3 +237,4 @@ module.exports.getLocalizedTimeString = getLocalizedTimeString
 module.exports.handleGoogleAudio = handleGoogleAudio
 module.exports.getTimeAsText = getTimeAsText
 module.exports.getLocalWeatherDescription = getLocalWeatherDescription
+module.exports.getWeatherAsText = getWeatherAsText

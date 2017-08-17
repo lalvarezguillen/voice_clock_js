@@ -1,5 +1,6 @@
 import test from 'ava'
 const moment = require('moment')
+const sino = require('sino')
 const helpers = require('./helpers')
 
 test('getSourceIP prefers res.ip over xforwardedfor', t => {
@@ -92,4 +93,46 @@ test('getTimeAsText selects o\'clock accordingly', t => {
     const oclock_in_string = time_strings.map(x => x.indexOf('o\'clock') >= 0)
     const expected_results = [false, true]
     t.deepEqual(oclock_in_string, expected_results)
+})
+
+test('getWeatherAsText requires location and condition', t => {
+    const meteodatas = [
+        // missing location
+        {
+            current: {
+                condition: {
+                    text: 'rainy',
+                    feelslike_c: 29
+                }
+            }
+        },
+        // missing condition
+        {
+            location: {
+                name: 'Caracas'
+            }
+        }
+    ]
+    const weather_strings = meteodatas.map(helpers.getWeatherAsText);
+    const expected_result = 'We weren\'t able to pinpoint your location'
+    weather_strings.map(x => t.deepEqual(x, expected_result))
+})
+
+test('getWeatherAsText produces readable weather description', t => {
+    const meteodata = {
+        location: {
+            name: 'Caracas'
+        },
+        current: {
+            condition: {
+                text: 'rainy'
+            },
+            feelslike_c: 29
+        }
+    }
+    const weather_string = helpers.getWeatherAsText(meteodata)
+    const expected = 'Currently, the weather in Caracas is rainy. ' +
+                     'And the thermal sensation is twenty-nine ' +
+                     'degrees Celsius'
+    t.deepEqual(expected, weather_string)
 })
