@@ -7,6 +7,7 @@
     "test": "nyc ava",
     "cov-report": "nyc report --reporter=lcov && codecov",
     "start": "node index.js",
+    "start:dev": "VOICE_CLOCK_ENV=dev nodemon index.js",
     "build:doc": "jsdoc index.js"
   },
   "author": "Luis Alvarez",
@@ -25,6 +26,10 @@
     "codecov": "^2.3.0",
     "eslint": "^4.4.1",
     "eslint-config-google": "^0.9.1",
-    "nyc": "^11.1.0"
+    "nyc": "^11.1.0",
+    "sinon": "^3.2.1"
+  },
+  "env": {
+    "NODE_ENV": "production"
   }
 }
