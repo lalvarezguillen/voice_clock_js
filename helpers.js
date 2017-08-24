@@ -238,3 +238,4 @@ module.exports.handleGoogleAudio = handleGoogleAudio
 module.exports.getTimeAsText = getTimeAsText
 module.exports.getLocalWeatherDescription = getLocalWeatherDescription
 module.exports.getWeatherAsText = getWeatherAsText
+module.exports.getMetereologicalData = getMetereologicalData

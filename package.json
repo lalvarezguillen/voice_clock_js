@@ -27,7 +27,7 @@
     "eslint": "^4.4.1",
     "eslint-config-google": "^0.9.1",
     "nyc": "^11.1.0",
-    "sino": "0.0.3"
+    "sinon": "^3.2.1"
   },
   "env": {
     "NODE_ENV": "production"

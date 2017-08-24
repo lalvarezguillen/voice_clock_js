@@ -1,7 +1,9 @@
 import test from 'ava'
 const moment = require('moment')
-const sino = require('sino')
+const sinon = require('sinon')
 const helpers = require('./helpers')
+const Request = require('request')
+const https = require('https')
 
 test('getSourceIP prefers res.ip over xforwardedfor', t => {
     const req = {
@@ -135,4 +137,31 @@ test('getWeatherAsText produces readable weather description', t => {
                      'And the thermal sensation is twenty-nine ' +
                      'degrees Celsius'
     t.deepEqual(expected, weather_string)
+})
+
+
+test('getMeteorologicalData builds url properly', t => {
+    const request_get = sinon.stub(Request, 'get')
+    helpers.getMetereologicalData('caracas')
+    request_get.restore()
+    const caracas_in_url = request_get.getCall(0).args[0]
+                            .indexOf('caracas') >= 0
+    t.deepEqual(caracas_in_url, true)
+})
+
+test('geolocIP builds URL properly', t => {
+    const request_get = sinon.stub(Request, 'get')
+    helpers.geolocIP('127.0.0.1')
+    request_get.restore()
+    const ip_in_url = request_get.getCall(0).args[0]
+                        .indexOf('127.0.0.1') >= 0
+    t.deepEqual(ip_in_url, true)
+})
+
+test('handleGoogleAudio passses url down to http.get', t => {
+    const https_get = sinon.stub(https, 'get')
+    helpers.handleGoogleAudio('127.0.0.1')
+    https_get.restore()
+    const ip_was_arg = https_get.getCall(0).args[0] === '127.0.0.1'
+    t.deepEqual(ip_was_arg, true)
 })
