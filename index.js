@@ -1,7 +1,6 @@
 const https = require('https')
 const ip = require('ip')
 const moment = require('moment-timezone')
-const Request = require('request')
 const express = require('express')
 const num2word = require('numbers2words')
 const googleTTS = require('google-tts-api')

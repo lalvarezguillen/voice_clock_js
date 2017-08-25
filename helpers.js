@@ -3,7 +3,7 @@ const ip = require('ip')
 const moment = require('moment-timezone')
 const Request = require('request')
 const num2word = require('numbers2words')
-
+const Axios = require('axios')
 const translator = new num2word('EN_US')
 const api_key = 'c8c07d9b9e8b4b569f4212704171108'
 
@@ -39,10 +39,9 @@ function getSourceIP(req){
 function geolocIP (ip) {
     // we could validate the IP here
     return new Promise((resolve, reject) => {
-        Request.get(`http://ip-api.com/json/${ip}`, (err, resp, body) => {
-            if (resp.statusCode == 200) {
-                const json_body = JSON.parse(body)
-                resolve(json_body)
+        Axios.get(`http://ip-api.com/json/${ip}`).then(resp => {
+            if (resp.status == 200) {
+                resolve(resp.data)
             }
             else {
                 reject('There was an error while geolocalizing the IP')
