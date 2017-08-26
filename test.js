@@ -142,7 +142,11 @@ test('getWeatherAsText produces readable weather description', t => {
 
 
 test('getMeteorologicalData builds url properly', t => {
-    const request_get = sinon.stub(Request, 'get')
+    const request_get = sinon.stub(Axios, 'get')
+                             .resolves({
+                                 status: 200,
+                                 data: 'some data'
+                             })
     helpers.getMetereologicalData('caracas')
     request_get.restore()
     const caracas_in_url = request_get.getCall(0).args[0]

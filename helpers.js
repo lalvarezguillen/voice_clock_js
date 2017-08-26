@@ -1,7 +1,6 @@
 const https = require('https')
 const ip = require('ip')
 const moment = require('moment-timezone')
-const Request = require('request')
 const num2word = require('numbers2words')
 const Axios = require('axios')
 const translator = new num2word('EN_US')
@@ -145,10 +144,9 @@ function getMetereologicalData (city) {
         // this function should return null or smething like that
         const url = `http://api.apixu.com/v1/current.json?key=${api_key}&q=${city}`
         console.log(url)
-        Request.get(url, (err, resp, body) => {
-            if (resp && resp.statusCode == 200) {
-                const body_obj = JSON.parse(body)
-                resolve(body_obj)
+        Axios.get(url).then(resp => {
+            if (resp && resp.status == 200) {
+                resolve(resp.data)
             }
             else {
                 reject('Unable to gather meteorological data')
@@ -183,7 +181,7 @@ function getWeatherAsText(meteodata) {
  */
 function handleGoogleAudio (url, user_req, user_resp) {
     console.log(url)
-     https.get(url, audio_resp => {
+    https.get(url, audio_resp => {
         user_resp.writeHead(200, {
             'cache-control': 'private, no-cache, no-store, must-revalidate',
             'expires': "-1",
