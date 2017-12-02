@@ -35,18 +35,13 @@ function getSourceIP(req){
  * @param {string} ip The IP to geolocalize
  * @return {Promise<object>}
  */
-function geolocIP (ip) {
+async function geolocIP (ip) {
     // we could validate the IP here
-    return new Promise((resolve, reject) => {
-        Axios.get(`http://ip-api.com/json/${ip}`).then(resp => {
-            if (resp.status == 200) {
-                resolve(resp.data)
-            }
-            else {
-                reject('There was an error while geolocalizing the IP')
-            }
-        })
-    })
+    const resp = await Axios.get(`http://ip-api.com/json/${ip}`)
+    if (resp.status == 200) {
+        return resp.data
+    }
+    return {error: 'There was an error while geolocalizing the IP'}
 }
 
 
@@ -101,16 +96,14 @@ function mostDetailedLocTime(geoloc_info){
  * @return {Promise<string>}
  */
 function getLocalizedTimeString(ip){
-    return new Promise((resolve, reject) => {
-        geolocIP(ip)
-            .then(geodata => {
-                const localized_dt = localizeCurrTime(geodata)
-                const location = mostDetailedLocTime(geodata)
-                const time_str = getTimeAsText(localized_dt, location)
-                resolve(time_str)
-            })
-            .catch(err => reject(err))
-    })
+    const geodata = geolocIP(ip)
+    if (geodata.error) {
+        return geodata.error
+    }
+    const localized_dt = localizeCurrTime(geodata)
+    const location = mostDetailedLocTime(geodata)
+    const time_str = getTimeAsText(localized_dt, location)
+    resolve(time_str)
 }
 
 /**
@@ -121,15 +114,12 @@ function getLocalizedTimeString(ip){
  * weather
  */
 function getLocalWeatherDescription (city) {
-    return new Promise((resolve, reject) => {
-        getMetereologicalData(city)
-            .catch(err => err)
-            .then(meteodata => {
-                const weather_description = getWeatherAsText(meteodata)
-                resolve(weather_description)
-            })
-            
-    })
+    const meteodata = getMetereologicalData(city)
+    if (meteodata.error) {
+        return meteodata
+    }
+    const weather_description = getWeatherAsText(meteodata)
+    return weather_description
 }
 
 /**
@@ -138,21 +128,14 @@ function getLocalWeatherDescription (city) {
  * under geodata.city
  * @return {obj} Contains meteorological data.
  */
-function getMetereologicalData (city) {
-    return new Promise((resolve, reject) => {
-        // This is here for developing purpose. If the city is not provided
-        // this function should return null or smething like that
-        const url = `http://api.apixu.com/v1/current.json?key=${api_key}&q=${city}`
-        console.log(url)
-        Axios.get(url).then(resp => {
-            if (resp && resp.status == 200) {
-                resolve(resp.data)
-            }
-            else {
-                reject('Unable to gather meteorological data')
-            }
-        })
-    })
+async function getMetereologicalData (city) {
+    const url = `http://api.apixu.com/v1/current.json?key=${api_key}&q=${city}`
+    console.log(url)
+    const resp = await Axios.get(url)
+    if (resp && resp.status == 200) {
+        return resp.data
+    }
+    return {error: 'Unable to gather meteorological data'}
 }
 
 /**
@@ -180,7 +163,6 @@ function getWeatherAsText(meteodata) {
  * @param {express.Response} user_resp The expressjs response object
  */
 function handleGoogleAudio (url, user_req, user_resp) {
-    console.log(url)
     https.get(url, audio_resp => {
         user_resp.writeHead(200, {
             'cache-control': 'private, no-cache, no-store, must-revalidate',
