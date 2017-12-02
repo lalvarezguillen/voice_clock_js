@@ -13,6 +13,7 @@
   "author": "Luis Alvarez",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.16.2",
     "express": "^4.15.3",
     "google-tts-api": "0.0.1",
     "ip": "^1.1.5",
