@@ -5,6 +5,7 @@ const helpers = require('./helpers')
 
 const app = express()
 const voice_clock_env = process.env.VOICE_CLOCK_ENV
+const voice_clock_port = process.env.VOICE_CLOCK_PORT || 3000
 console.log(voice_clock_env)
 
 
@@ -83,6 +84,6 @@ app.get('/weather/:city*?', function (req, res) {
 })
 
 
-app.listen(3000, function() {
-    console.log('Listening on port 3000')
+app.listen(voice_clock_port, function() {
+    console.log(`Listening on port ${voice_clock_port}`)
 })
